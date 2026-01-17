@@ -118,16 +118,22 @@ if (Test-Path $GInclude) {
 # Copy libraries
 Write-Host "Copying libraries..." -ForegroundColor Yellow
 
+$MissingLibs = @()
+
 $LibGcc = Join-Path $ScriptDir "libgcc.a"
 if (Test-Path $LibGcc) {
     Copy-Item $LibGcc $LibDir -Force
     Write-Host "  - libgcc.a" -ForegroundColor Gray
+} else {
+    $MissingLibs += "libgcc.a"
 }
 
 $LibC = Join-Path $ScriptDir "libc.a"
 if (Test-Path $LibC) {
     Copy-Item $LibC $LibDir -Force
     Write-Host "  - libc.a" -ForegroundColor Gray
+} else {
+    $MissingLibs += "libc.a"
 }
 
 Write-Host ""
@@ -139,3 +145,14 @@ Write-Host "Contents:"
 Write-Host "  bin/      - Compiler executables"
 Write-Host "  include/  - Header files"
 Write-Host "  lib/      - Static libraries"
+
+if ($MissingLibs.Count -gt 0) {
+    Write-Host ""
+    Write-Host "WARNING: The following libraries were not found and were not installed:" -ForegroundColor Yellow
+    foreach ($lib in $MissingLibs) {
+        Write-Host "  - $lib" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "To build these libraries, you need arm-none-eabi toolchain (devkitARM or binutils-arm-none-eabi)."
+    Write-Host "Run: .\build_libs_windows.ps1"
+}
